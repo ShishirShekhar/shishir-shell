@@ -20,36 +20,38 @@ A minimal yet functional shell implementation written in C, demonstrating core s
 
 ## Installation
 
-### Option 1: Download Pre-built Binary
+### Option 1: Quick Install (One-liner)
+
+**macOS/Linux** – Download, extract, and run in one command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShishirShekhar/shishir-shell/main/install.sh | sh
+```
+
+**To install globally** (system-wide):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShishirShekhar/shishir-shell/main/install.sh | sh -s -- --global
+```
+
+Then run `sshell` from anywhere.
+
+### Option 2: Download Pre-built Binary
 
 Download the latest release from [GitHub Releases](../../releases):
 
 ```bash
-# Download for your platform (macOS/Linux)
-wget https://github.com/ShishirShekhar/shishir-shell/releases/download/v1.0.1/sshell
-chmod +x sshell
+# Download tar.gz for your platform
+wget https://github.com/ShishirShekhar/shishir-shell/releases/download/v1.0.1/sshell-v1.0.1-darwin-amd64.tar.gz
 
-# macOS users: Remove quarantine flag
-xattr -d com.apple.quarantine sshell 2>/dev/null || true
+# Extract (preserves execute permission)
+tar -xzf sshell-v1.0.1-darwin-amd64.tar.gz
 
+# Run directly—no chmod needed
 ./sshell
 ```
 
-**macOS Security Note:** If you see "cannot be opened because the developer cannot be verified":
-- Right-click the `sshell` file → "Open" → Click "Open" in the dialog
-- Or run: `xattr -d com.apple.quarantine sshell`
-- Or build from source (recommended for security)
-
-**If output looks like gibberish:** You are likely printing the binary instead of executing it. Run it directly with `./sshell` (or `sshell` if installed), and do not pipe/redirect the binary into the shell.
-
-**If it opens in a text editor:** Finder treats it like a document when double-clicked. Instead, run it from Terminal:
-
-```bash
-chmod +x sshell   # once, if needed
-./sshell          # run from the folder where you downloaded it
-```
-
-### Option 2: Build from Source
+### Option 3: Build from Source
 
 #### Prerequisites
 - GCC compiler
@@ -62,7 +64,7 @@ chmod +x sshell   # once, if needed
 make
 ```
 
-### Run
+#### Run
 
 ```bash
 make run
@@ -74,7 +76,7 @@ Or directly:
 ./sshell
 ```
 
-### Option 3: Windows via WSL
+### Option 4: Windows via WSL
 
 Windows users: run sshell inside Windows Subsystem for Linux (WSL).
 

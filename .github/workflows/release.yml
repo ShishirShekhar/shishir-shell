@@ -21,9 +21,20 @@ jobs:
       - name: Build
         run: make clean && make
       
+      - name: Package binary
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+          if [ "$OS_NAME" = "darwin" ]; then
+            PLATFORM="darwin-amd64"
+          else
+            PLATFORM="linux-amd64"
+          fi
+          tar -czf sshell-v${VERSION}-${PLATFORM}.tar.gz sshell
+      
       - name: Upload binary to release
         uses: softprops/action-gh-release@v1
         with:
-          files: sshell
+          files: sshell-v*-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
