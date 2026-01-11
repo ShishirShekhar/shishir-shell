@@ -98,7 +98,7 @@ sshell> help
 [displays all commands]
 
 sshell> version
-🐚 Shishir Shell v1.0.0
+🐚 Shishir Shell v1.0.1
 
 sshell> exit
 ```
