@@ -1,0 +1,64 @@
+# Clang-Format configuration for Shishir Shell
+# Run: clang-format -i src/*.c src/*.h
+# Based on industry-standard C coding conventions
+
+BasedOnStyle: LLVM
+Language: C
+
+# Indentation
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 2
+IndentCaseLabels: true
+IndentGotoLabels: false
+IndentPPDirectives: AfterHash
+
+# Line length (80 is traditional, 100 is modern compromise)
+ColumnLimit: 80
+
+# Brace style - Linux/K&R (industry standard for C)
+# Functions on new line, control structures same line
+BreakBeforeBraces: Linux
+
+# Spacing
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceBeforeAssignmentOperators: true
+
+# Pointer and reference alignment
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# Function declarations/definitions
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+BinPackParameters: true
+BinPackArguments: true
+
+# Breaking long lines
+AlwaysBreakAfterDefinitionReturnType: None
+AlignAfterOpenBracket: Align
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# Alignment
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: false
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: true
+
+# Include sorting
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# Other
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+ReflowComments: true

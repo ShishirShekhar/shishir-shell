@@ -1,0 +1,26 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags (v1.0.0, v1.0.1, etc.)
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build
+        run: make clean && make
+      
+      - name: Upload binary to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: sshell
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
