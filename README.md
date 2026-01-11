@@ -51,22 +51,6 @@ chmod +x sshell   # once, if needed
 
 ### Option 2: Build from Source
 
-### Option 3: Windows via WSL
-
-Windows users: run sshell inside Windows Subsystem for Linux (WSL).
-
-```bash
-# In an elevated PowerShell (first-time setup)
-wsl --install
-
-# Then inside WSL (Ubuntu or other distro)
-sudo apt update && sudo apt install -y build-essential
-git clone https://github.com/ShishirShekhar/shishir-shell.git
-cd shishir-shell
-make
-./sshell
-```
-
 #### Prerequisites
 - GCC compiler
 - Make
@@ -87,6 +71,22 @@ make run
 Or directly:
 
 ```bash
+./sshell
+```
+
+### Option 3: Windows via WSL
+
+Windows users: run sshell inside Windows Subsystem for Linux (WSL).
+
+```bash
+# In an elevated PowerShell (first-time setup)
+wsl --install
+
+# Then inside WSL (Ubuntu or other distro)
+sudo apt update && sudo apt install -y build-essential
+git clone https://github.com/ShishirShekhar/shishir-shell.git
+cd shishir-shell
+make
 ./sshell
 ```
 
