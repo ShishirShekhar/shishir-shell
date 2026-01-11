@@ -41,13 +41,9 @@ Then run `sshell` from anywhere.
 Download the latest release from [GitHub Releases](../../releases):
 
 ```bash
-# Download tar.gz for your platform
-wget https://github.com/ShishirShekhar/shishir-shell/releases/download/v1.0.1/sshell-v1.0.1-darwin-amd64.tar.gz
-
-# Extract (preserves execute permission)
-tar -xzf sshell-v1.0.1-darwin-amd64.tar.gz
-
-# Run directly—no chmod needed
+# Visit releases and download the tar.gz for your platform
+# Then extract and run:
+tar -xzf sshell-*.tar.gz
 ./sshell
 ```
 

@@ -1,9 +1,19 @@
 #!/usr/bin/env sh
 set -e
 
-VERSION="1.0.1"
 REPO="ShishirShekhar/shishir-shell"
 BINARY_NAME="sshell"
+
+# Fetch latest release version from GitHub API
+echo "Fetching latest release..."
+LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep -o '"tag_name":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+if [ -z "$LATEST_TAG" ]; then
+  echo "Error: Could not fetch latest release from GitHub" >&2
+  exit 1
+fi
+
+VERSION=${LATEST_TAG#v}
 
 # Detect OS
 OS=$(uname -s)
@@ -26,8 +36,8 @@ esac
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-echo "Downloading sshell v$VERSION for $OS ($ARCH)..."
-DOWNLOAD_URL="https://github.com/$REPO/releases/download/v$VERSION/$BINARY_NAME-v$VERSION-$PLATFORM.tar.gz"
+echo "Downloading sshell $VERSION for $OS..."
+DOWNLOAD_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$BINARY_NAME-$LATEST_TAG-$PLATFORM.tar.gz"
 
 # Download and extract
 if ! curl -fsSL "$DOWNLOAD_URL" | tar -xzf - -C "$TMPDIR"; then
@@ -66,7 +76,7 @@ if [ "$1" = "--global" ] || [ "$1" = "-g" ]; then
   fi
 else
   # Run directly from temp
-  echo "✓ Downloaded and extracted sshell v$VERSION"
+  echo "✓ Downloaded and extracted sshell $VERSION"
   echo ""
   "$BINARY_PATH"
 fi
