@@ -39,6 +39,16 @@ static int parse_double_quote(char **p, char **out)
   (*p)++; // Skip opening quote
 
   while (**p != '\0' && **p != '"') {
+    if (**p == '\\' && *(*p + 1) != '\0') {
+      char next_char = *(*p + 1);
+      if (next_char == '"' || next_char == '\\' || next_char == '$' ||
+          next_char == '`' || next_char == '\n') {
+        **out = next_char;
+        (*out)++;
+        (*p) += 2;
+        continue;
+      }
+    }
     **out = **p;
     (*out)++;
     (*p)++;
