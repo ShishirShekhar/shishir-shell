@@ -1,7 +1,7 @@
 # Shishir Shell - Makefile
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -I./src -std=c99
-LDFLAGS = 
+LDFLAGS = -lreadline 
 
 # Source files
 SRC = src/main.c src/input_buffer.c src/command.c src/builtin.c src/path_utils.c src/parser.c src/executor.c

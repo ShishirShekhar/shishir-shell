@@ -30,19 +30,19 @@ int main()
   // Show welcome banner
   print_welcome_banner();
 
-  printf("sshell> ");
   InputBuffer input_buffer = Create_Input_Buffer();
 
   // Infinite loop to continuously prompt for user commands
-  // Empty input (size == 0) breaks the loop; a real shell would reprompt
+  // Empty input (size == 0) breaks the loop (Ctrl+D)
   while (capture_input(&input_buffer)) {
-    if (!process_command(input_buffer.input)) {
-      printf("%s: command not found\n", input_buffer.input);
+    if (input_buffer.input_size > 0) {
+      if (!process_command(input_buffer.input)) {
+        printf("%s: command not found\n", input_buffer.input);
+      }
     }
-
-    printf("sshell> ");
   }
 
+  printf("\n");
   free_input_buffer(&input_buffer);
   return EXIT_SUCCESS;
 }
