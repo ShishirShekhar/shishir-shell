@@ -1,7 +1,8 @@
 # Shishir Shell - Makefile
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -I./src -std=c99
-LDFLAGS = -lreadline 
+CPPFLAGS =
+LDFLAGS = -lreadline
 
 # Source files
 SRC = src/main.c src/input_buffer.c src/command.c src/builtin.c src/path_utils.c src/parser.c src/executor.c
@@ -15,12 +16,12 @@ all: $(TARGET)
 
 # Build the executable
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
 	@echo "✓ Build successful: $(TARGET)"
 
 # Compile individual source files
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Run the shell
 run: $(TARGET)
