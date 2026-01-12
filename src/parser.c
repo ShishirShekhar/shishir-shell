@@ -12,15 +12,16 @@ size_t sshell_parse_argv(char *input, char **argv, size_t max_args)
 
   size_t argc = 0;
   char *p = input;
-  bool in_single = false;
+  char quote_char = '\0'; // Track which quote type we're in (or '\0' if none)
 
   while (*p != '\0')
   {
-    // Skip leading spaces
-    while (*p == ' ')
+    // Skip leading whitespace
+    while (*p == ' ' || *p == '\t')
     {
       p++;
     }
+
     if (*p == '\0')
     {
       break;
@@ -28,50 +29,74 @@ size_t sshell_parse_argv(char *input, char **argv, size_t max_args)
 
     if (argc >= max_args - 1)
     {
-      break;
+      break; // Buffer full
     }
 
     // Start of a new token
-    argv[argc++] = p;
-
+    char *token_start = p;
     char *out = p;
+
+    // Parse token, handling quotes and escape sequences
     while (*p != '\0')
     {
-      if (!in_single && *p == '\'')
+      // Handle escape sequences
+      if (*p == '\\' && *(p + 1) != '\0')
       {
-        in_single = true;
-        p++;
+        // Copy the escaped character literally
+        *out++ = *(p + 1);
+        p += 2;
         continue;
-      }
-      if (in_single && *p == '\'')
-      {
-        in_single = false;
-        p++;
-        continue;
-      }
-      if (!in_single && *p == ' ')
-      {
-        p++; // move past delimiter
-        break;
       }
 
+      // Handle quote characters
+      if (quote_char == '\0')
+      {
+        // Not currently in quotes
+        if (*p == '\'' || *p == '"')
+        {
+          quote_char = *p;
+          p++;
+          continue;
+        }
+        // End token on whitespace
+        if (*p == ' ' || *p == '\t')
+        {
+          p++; // Advance past whitespace before null terminating
+          break;
+        }
+      }
+      else
+      {
+        // Currently in quotes
+        if (*p == quote_char)
+        {
+          quote_char = '\0';
+          p++;
+          continue;
+        }
+      }
+
+      // Regular character: copy to output
       *out++ = *p++;
     }
 
-    // Terminate this token
+    // Terminate token
     *out = '\0';
 
-    // Skip spaces before next token
-    while (*p == ' ')
+    // Check for unclosed quotes
+    if (quote_char != '\0')
+    {
+      argv[0] = NULL;
+      return 0; // Unclosed quote
+    }
+
+    argv[argc++] = token_start;
+
+    // Skip trailing whitespace
+    while (*p == ' ' || *p == '\t')
     {
       p++;
     }
-  }
-
-  if (in_single)
-  {
-    argv[0] = NULL;
-    return 0; // Unmatched single quote
   }
 
   argv[argc] = NULL;
