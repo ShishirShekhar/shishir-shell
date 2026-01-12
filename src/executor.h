@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 
-// Execute external command with optional stdout redirection target (out_file may be NULL)
-// Returns: true on success, false on failure
-bool sshell_execute_external(const char *command, char *argv[], const char *out_file);
+// Execute external command with optional stdout/stderr redirection targets (may
+// be NULL) Returns: true on success, false on failure
+bool sshell_execute_external(const char *command, char *argv[],
+                             const char *out_file, const char *err_file);
 
 #endif // EXECUTOR_H

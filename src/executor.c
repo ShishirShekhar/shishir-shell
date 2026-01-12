@@ -13,7 +13,8 @@
 #include <unistd.h>
 
 bool sshell_execute_external(const char *command, char *argv[],
-                             const char *provided_out_file)
+                             const char *provided_out_file,
+                             const char *provided_err_file)
 {
   char resolved_path[PATH_MAX];
 
@@ -22,6 +23,7 @@ bool sshell_execute_external(const char *command, char *argv[],
   }
 
   const char *out_file = provided_out_file;
+  const char *err_file = provided_err_file;
 
   pid_t pid = fork();
   if (pid == 0) {
@@ -32,6 +34,16 @@ bool sshell_execute_external(const char *command, char *argv[],
         _exit(EXIT_FAILURE);
       }
       dup2(fd, STDOUT_FILENO);
+      close(fd);
+    }
+
+    if (err_file != NULL) {
+      int fd = open(err_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+      if (fd < 0) {
+        perror("open failed");
+        _exit(EXIT_FAILURE);
+      }
+      dup2(fd, STDERR_FILENO);
       close(fd);
     }
 
