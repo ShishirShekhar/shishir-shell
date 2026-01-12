@@ -62,12 +62,17 @@ static int parse_double_quote(char **p, char **out)
   return 1;
 }
 
-// Parse unquoted token: copy chars until whitespace, handle escapes
+// Parse unquoted token: copy chars until whitespace or quote, handle escapes
 // Advances both p and out
 static void parse_unquoted(char **p, char **out)
 {
   while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' &&
          **p != '"') {
+    // Stop before redirection operators so they become separate tokens
+    if (**p == '>' || (**p == '1' && *(*p + 1) == '>')) {
+      return;
+    }
+
     if (**p == '\\' && *(*p + 1) != '\0') {
       **out = *(*p + 1);
       (*out)++;
@@ -86,6 +91,8 @@ static void parse_unquoted(char **p, char **out)
 // Returns 0 if unclosed quote is encountered
 static int parse_single_token(char **p, char **out)
 {
+  char *token_start = *out;
+
   while (**p != '\0') {
     // Handle single quotes
     if (**p == '\'') {
@@ -101,6 +108,26 @@ static int parse_single_token(char **p, char **out)
         return 0; // Unclosed quote
       }
       continue;
+    }
+
+    // Handle redirection operators as separate tokens
+    if (**p == '>') {
+      if (*out == token_start) {
+        **out = '>';
+        (*out)++;
+        (*p)++;
+      }
+      break; // End token; if we had content, leave '>' for next token
+    }
+    if (**p == '1' && *(*p + 1) == '>') {
+      if (*out == token_start) {
+        **out = '1';
+        (*out)++;
+        **out = '>';
+        (*out)++;
+        (*p) += 2;
+      }
+      break; // End token; if we had content, leave '1>' for next token
     }
 
     // Handle whitespace - end of token
@@ -150,7 +177,10 @@ size_t sshell_parse_argv(char *input, char **argv, size_t max_args)
 
     argv[argc++] = token_start;
 
-    // Skip trailing whitespace before next token
+    // Move past any internal terminators we just wrote (but stop at final NUL)
+    while (*p == '\0' && *(p + 1) != '\0') {
+      p++;
+    }
     p = skip_whitespace(p);
   }
 
