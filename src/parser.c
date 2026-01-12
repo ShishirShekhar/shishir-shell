@@ -69,7 +69,7 @@ static void parse_unquoted(char **p, char **out)
   while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' &&
          **p != '"') {
     // Stop before redirection operators so they become separate tokens
-    if (**p == '>' || (**p == '1' && *(*p + 1) == '>')) {
+    if (**p == '>' || ((**p == '1' || **p == '2') && *(*p + 1) == '>')) {
       return;
     }
 
@@ -119,9 +119,9 @@ static int parse_single_token(char **p, char **out)
       }
       break; // End token; if we had content, leave '>' for next token
     }
-    if (**p == '1' && *(*p + 1) == '>') {
+    if ((**p == '1' || **p == '2') && *(*p + 1) == '>') {
       if (*out == token_start) {
-        **out = '1';
+        **out = **p;
         (*out)++;
         **out = '>';
         (*out)++;
