@@ -13,9 +13,24 @@ A minimal yet functional shell implementation written in C, demonstrating core s
   - `help` - Show all available commands
   - `version` - Display version and author info
 
-- **Single Quote Support** - Preserve whitespace and special characters
+- **Advanced Parsing**:
+  - Single quote support - Preserve whitespace and special characters
+  - Double quote support - Variable expansion with escape sequences
+  - Escape sequences in unquoted and quoted strings
+
+- **I/O Redirection**:
+  - `>` or `1>` - Redirect stdout (truncate)
+  - `>>` or `1>>` - Redirect stdout (append)
+  - `2>` - Redirect stderr (truncate)
+  - `2>>` - Redirect stderr (append)
+
+- **Interactive Features**:
+  - Tab completion for builtin commands
+  - Tab completion for external commands in PATH
+  - Command history with arrow keys (↑/↓)
+  - Line editing (Ctrl+A, Ctrl+E, Ctrl+K, etc.)
+  
 - **External Command Execution** - Execute programs from PATH
-- **Smart Command Parsing** - Parse and tokenize user input
 - **Interactive Prompt** - Branded `sshell>` prompt with welcome banner
 
 ## Installation
@@ -52,7 +67,21 @@ tar -xzf sshell-*.tar.gz
 #### Prerequisites
 - GCC compiler
 - Make
+- GNU Readline library
 - C99 standard library
+
+**Install dependencies:**
+
+On Ubuntu/Debian:
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential libreadline-dev
+```
+
+On macOS:
+```bash
+brew install readline
+```
 
 #### Compile
 
@@ -94,6 +123,9 @@ make
 sshell> echo hello
 hello
 
+sshell> echo "hello world"
+hello world
+
 sshell> echo '  spaces  preserved  '
   spaces  preserved  
 
@@ -108,13 +140,26 @@ sshell> pwd
 
 sshell> cd ..
 
+sshell> echo test > output.txt
+
+sshell> echo more >> output.txt
+
+sshell> cat nonexistent 2> errors.txt
+
 sshell> help
 [displays all commands]
 
 sshell> version
-🐚 Shishir Shell v1.0.1
+🐚 Shishir Shell v1.5.4
 
 sshell> exit
+```
+
+**Tab Completion Examples:**
+```bash
+sshell> ec<TAB>       # completes to "echo"
+sshell> e<TAB><TAB>   # shows "echo" and "exit"
+sshell> g<TAB>        # shows "git", "gcc", "grep", etc.
 ```
 
 ## Project Structure
@@ -171,12 +216,14 @@ make
 ## Future Enhancements
 
 - [x] Single quote parsing
+- [x] Double quote parsing with escape sequences
 - [x] Directory navigation (cd, pwd)
-- [ ] Double quote parsing with variable expansion
-- [ ] Pipes and redirection (`|`, `>`, `<`)
+- [x] I/O redirection (`>`, `>>`, `2>`, `2>>`)
+- [x] Command history (arrow keys)
+- [x] Tab completion for builtins and external commands
+- [ ] Pipes (`|`)
+- [ ] Input redirection (`<`)
 - [ ] Background processes (`&`)
-- [ ] Command history (arrow keys)
-- [ ] Tab completion
 - [ ] Environment variables (`$VAR`)
 - [ ] Aliases
 - [ ] Job control
