@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -I./src -std=c99
 CPPFLAGS =
-LDFLAGS = -lreadline
+LDFLAGS = -lreadline -lncurses
 
 # Source files
 SRC = src/main.c src/input_buffer.c src/command.c src/builtin.c src/path_utils.c src/parser.c src/executor.c
@@ -16,7 +16,7 @@ all: $(TARGET)
 
 # Build the executable
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(LDFLAGS)
 	@echo "✓ Build successful: $(TARGET)"
 
 # Compile individual source files
