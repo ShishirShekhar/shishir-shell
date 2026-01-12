@@ -39,15 +39,9 @@ static int parse_double_quote(char **p, char **out)
   (*p)++; // Skip opening quote
 
   while (**p != '\0' && **p != '"') {
-    if (**p == '\\' && *(*p + 1) != '\0') {
-      **out = *(*p + 1);
-      (*out)++;
-      (*p) += 2;
-    } else {
-      **out = **p;
-      (*out)++;
-      (*p)++;
-    }
+    **out = **p;
+    (*out)++;
+    (*p)++;
   }
 
   if (**p != '"') {
@@ -62,7 +56,8 @@ static int parse_double_quote(char **p, char **out)
 // Advances both p and out
 static void parse_unquoted(char **p, char **out)
 {
-  while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' && **p != '"') {
+  while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' &&
+         **p != '"') {
     if (**p == '\\' && *(*p + 1) != '\0') {
       **out = *(*p + 1);
       (*out)++;
@@ -83,7 +78,7 @@ static int parse_single_token(char **p, char **out)
 {
   while (**p != '\0') {
     // Handle single quotes
-    if (**p == '\'') { 
+    if (**p == '\'') {
       if (!parse_single_quote(p, out)) {
         return 0; // Unclosed quote
       }
