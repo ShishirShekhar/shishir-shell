@@ -10,17 +10,36 @@
 #include <string.h>
 #include <unistd.h>
 
-// Extract stdout and stderr redirection from argv (supports '>', '1>', '2>').
-// Removes the redirection tokens from argv. Returns false on syntax error.
-static bool extract_redirections(char *argv[], char **out_file, char **err_file)
+// Extract stdout and stderr redirection from argv (supports '>', '>>', '1>',
+// '1>>', '2>', '2>>'). Removes the redirection tokens from argv. Returns false
+// on syntax error.
+static bool extract_redirections(char *argv[], char **out_file, char **err_file,
+                                 bool *out_append, bool *err_append)
 {
   int w = 0;
   for (int r = 0; argv[r] != NULL; r++) {
-    if (strcmp(argv[r], "2>") == 0) {
+    if (strcmp(argv[r], "2>>") == 0) {
       if (argv[r + 1] == NULL) {
         return false; // missing target
       }
       *err_file = argv[r + 1];
+      *err_append = true;
+      r++; // skip target
+      continue;
+    } else if (strcmp(argv[r], "2>") == 0) {
+      if (argv[r + 1] == NULL) {
+        return false; // missing target
+      }
+      *err_file = argv[r + 1];
+      *err_append = false;
+      r++; // skip target
+      continue;
+    } else if (strcmp(argv[r], ">>") == 0 || strcmp(argv[r], "1>>") == 0) {
+      if (argv[r + 1] == NULL) {
+        return false; // missing target
+      }
+      *out_file = argv[r + 1];
+      *out_append = true;
       r++; // skip target
       continue;
     } else if (strcmp(argv[r], ">") == 0 || strcmp(argv[r], "1>") == 0) {
@@ -28,6 +47,7 @@ static bool extract_redirections(char *argv[], char **out_file, char **err_file)
         return false; // missing target
       }
       *out_file = argv[r + 1];
+      *out_append = false;
       r++; // skip target
       continue;
     }
@@ -40,7 +60,8 @@ static bool extract_redirections(char *argv[], char **out_file, char **err_file)
 // Run a builtin with optional stdout/stderr redirection; returns success
 static bool run_builtin_with_redirect(sshell_builtin_handler builtin, int argc,
                                       char *argv[], char *out_file,
-                                      char *err_file)
+                                      char *err_file, bool out_append,
+                                      bool err_append)
 {
   int saved_stdout = -1;
   int saved_stderr = -1;
@@ -48,7 +69,8 @@ static bool run_builtin_with_redirect(sshell_builtin_handler builtin, int argc,
   int fd_err = -1;
 
   if (out_file != NULL) {
-    fd_out = open(out_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    int flags = O_CREAT | O_WRONLY | (out_append ? O_APPEND : O_TRUNC);
+    fd_out = open(out_file, flags, 0644);
     if (fd_out < 0) {
       perror("open failed");
       return false;
@@ -69,7 +91,8 @@ static bool run_builtin_with_redirect(sshell_builtin_handler builtin, int argc,
   }
 
   if (err_file != NULL) {
-    fd_err = open(err_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    int flags = O_CREAT | O_WRONLY | (err_append ? O_APPEND : O_TRUNC);
+    fd_err = open(err_file, flags, 0644);
     if (fd_err < 0) {
       perror("open failed");
       if (saved_stdout >= 0) {
@@ -141,7 +164,10 @@ bool process_command(const char *input)
 
   char *out_file = NULL;
   char *err_file = NULL;
-  if (!extract_redirections(argv, &out_file, &err_file)) {
+  bool out_append = false;
+  bool err_append = false;
+  if (!extract_redirections(argv, &out_file, &err_file, &out_append,
+                            &err_append)) {
     fprintf(stderr, "redirection syntax error\n");
     return false;
   }
@@ -154,9 +180,10 @@ bool process_command(const char *input)
 
   if (builtin != NULL) {
     return run_builtin_with_redirect(builtin, (int) new_argc, argv, out_file,
-                                     err_file);
+                                     err_file, out_append, err_append);
   }
 
   // Handle external commands
-  return sshell_execute_external(command, argv, out_file, err_file);
+  return sshell_execute_external(command, argv, out_file, err_file, out_append,
+                                 err_append);
 }

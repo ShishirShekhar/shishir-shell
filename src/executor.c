@@ -14,7 +14,8 @@
 
 bool sshell_execute_external(const char *command, char *argv[],
                              const char *provided_out_file,
-                             const char *provided_err_file)
+                             const char *provided_err_file, bool out_append,
+                             bool err_append)
 {
   char resolved_path[PATH_MAX];
 
@@ -28,7 +29,8 @@ bool sshell_execute_external(const char *command, char *argv[],
   pid_t pid = fork();
   if (pid == 0) {
     if (out_file != NULL) {
-      int fd = open(out_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+      int flags = O_CREAT | O_WRONLY | (out_append ? O_APPEND : O_TRUNC);
+      int fd = open(out_file, flags, 0644);
       if (fd < 0) {
         perror("open failed");
         _exit(EXIT_FAILURE);
@@ -38,7 +40,8 @@ bool sshell_execute_external(const char *command, char *argv[],
     }
 
     if (err_file != NULL) {
-      int fd = open(err_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+      int flags = O_CREAT | O_WRONLY | (err_append ? O_APPEND : O_TRUNC);
+      int fd = open(err_file, flags, 0644);
       if (fd < 0) {
         perror("open failed");
         _exit(EXIT_FAILURE);
