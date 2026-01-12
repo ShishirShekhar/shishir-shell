@@ -17,9 +17,26 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libreadline-dev
+
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install readline
       
       - name: Build
-        run: make clean && make
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            export CPPFLAGS="-I$(brew --prefix readline)/include"
+            export LDFLAGS="-L$(brew --prefix readline)/lib"
+          fi
+          make clean && make
       
       - name: Package binary
         run: |
