@@ -141,3 +141,17 @@ bool sshell_is_builtin(const char *command)
 {
   return sshell_get_builtin(command) != NULL;
 }
+
+size_t sshell_get_builtin_count()
+{
+  return sizeof(BUILTINS) / sizeof(BUILTINS[0]);
+}
+
+const char *sshell_get_builtin_name(size_t index)
+{
+  size_t count = sshell_get_builtin_count();
+  if (index >= count) {
+    return NULL;
+  }
+  return BUILTINS[index].name;
+}
