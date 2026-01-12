@@ -68,8 +68,11 @@ static void parse_unquoted(char **p, char **out)
 {
   while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' &&
          **p != '"') {
-    // Stop before redirection operators so they become separate tokens
-    if (**p == '>' || ((**p == '1' || **p == '2') && *(*p + 1) == '>')) {
+    // Stop before any redirection operator
+    if (**p == '>') {
+      return;
+    }
+    if ((**p == '1' || **p == '2') && *(*p + 1) == '>') {
       return;
     }
 
@@ -83,6 +86,65 @@ static void parse_unquoted(char **p, char **out)
       (*p)++;
     }
   }
+}
+
+// Try to parse a redirection operator as a token
+// Returns the number of characters in the operator (0 if not a redirection)
+static int try_parse_redirection(char **p, char **out, char *token_start)
+{
+  // Check for 1>> or 2>>
+  if ((**p == '1' || **p == '2') && *(*p + 1) == '>' && *(*p + 2) == '>') {
+    if (*out == token_start) {
+      **out = **p;
+      (*out)++;
+      **out = '>';
+      (*out)++;
+      **out = '>';
+      (*out)++;
+      (*p) += 3;
+      return 3;
+    }
+    return -1; // Signal to break but don't consume
+  }
+
+  // Check for 1> or 2>
+  if ((**p == '1' || **p == '2') && *(*p + 1) == '>') {
+    if (*out == token_start) {
+      **out = **p;
+      (*out)++;
+      **out = '>';
+      (*out)++;
+      (*p) += 2;
+      return 2;
+    }
+    return -1;
+  }
+
+  // Check for >>
+  if (**p == '>' && *(*p + 1) == '>') {
+    if (*out == token_start) {
+      **out = '>';
+      (*out)++;
+      **out = '>';
+      (*out)++;
+      (*p) += 2;
+      return 2;
+    }
+    return -1;
+  }
+
+  // Check for >
+  if (**p == '>') {
+    if (*out == token_start) {
+      **out = '>';
+      (*out)++;
+      (*p)++;
+      return 1;
+    }
+    return -1;
+  }
+
+  return 0; // Not a redirection operator
 }
 
 // Parse a single token from input string
@@ -111,23 +173,9 @@ static int parse_single_token(char **p, char **out)
     }
 
     // Handle redirection operators as separate tokens
-    if (**p == '>') {
-      if (*out == token_start) {
-        **out = '>';
-        (*out)++;
-        (*p)++;
-      }
-      break; // End token; if we had content, leave '>' for next token
-    }
-    if ((**p == '1' || **p == '2') && *(*p + 1) == '>') {
-      if (*out == token_start) {
-        **out = **p;
-        (*out)++;
-        **out = '>';
-        (*out)++;
-        (*p) += 2;
-      }
-      break; // End token; if we had content, leave '1>' for next token
+    int redir_result = try_parse_redirection(p, out, token_start);
+    if (redir_result != 0) {
+      break; // Either parsed operator or need to break for next token
     }
 
     // Handle whitespace - end of token
