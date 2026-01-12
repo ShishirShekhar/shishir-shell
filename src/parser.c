@@ -12,59 +12,104 @@ static char *skip_whitespace(char *p)
   return p;
 }
 
-// Parse a single token from input string
-// Handles escape sequences (\) and quoted strings (' and ")
-// Modifies input buffer in-place by inserting null terminators
-// Returns 0 if unclosed quote is encountered
-static int parse_single_token(char **p, char **out)
+// Parse content within single quotes: everything literal, no escapes
+// Advances both p and out, returns success/failure
+static int parse_single_quote(char **p, char **out)
 {
-  char quote_char = '\0';
+  (*p)++; // Skip opening quote
 
-  while (**p != '\0') {
-    // Handle escape sequences: \x becomes x
-    if (**p == '\\' && *(*p + 1) != '\0') {
-      **out = *(*p + 1);
-      (*out)++;
-      (*p) += 2;
-      continue;
-    }
-
-    // Handle quote characters
-    if (quote_char == '\0') {
-      // Not currently in quotes
-      if (**p == '\'' || **p == '"') {
-        quote_char = **p;
-        (*p)++;
-        continue;
-      }
-      // End token on whitespace
-      if (**p == ' ' || **p == '\t') {
-        (*p)++; // Advance past whitespace before null terminating
-        break;
-      }
-    } else {
-      // Currently in quotes
-      if (**p == quote_char) {
-        quote_char = '\0';
-        (*p)++;
-        continue;
-      }
-    }
-
-    // Regular character: copy to output
+  while (**p != '\0' && **p != '\'') {
     **out = **p;
     (*out)++;
     (*p)++;
   }
 
-  // Terminate token
-  **out = '\0';
-
-  // Check for unclosed quotes
-  if (quote_char != '\0') {
-    return 0; // Unclosed quote error
+  if (**p != '\'') {
+    return 0; // Unclosed single quote
   }
 
+  (*p)++; // Skip closing quote
+  return 1;
+}
+
+// Parse content within double quotes: literal except for backslash escapes
+// Advances both p and out, returns success/failure
+static int parse_double_quote(char **p, char **out)
+{
+  (*p)++; // Skip opening quote
+
+  while (**p != '\0' && **p != '"') {
+    if (**p == '\\' && *(*p + 1) != '\0') {
+      **out = *(*p + 1);
+      (*out)++;
+      (*p) += 2;
+    } else {
+      **out = **p;
+      (*out)++;
+      (*p)++;
+    }
+  }
+
+  if (**p != '"') {
+    return 0; // Unclosed double quote
+  }
+
+  (*p)++; // Skip closing quote
+  return 1;
+}
+
+// Parse unquoted token: copy chars until whitespace, handle escapes
+// Advances both p and out
+static void parse_unquoted(char **p, char **out)
+{
+  while (**p != '\0' && **p != ' ' && **p != '\t' && **p != '\'' && **p != '"') {
+    if (**p == '\\' && *(*p + 1) != '\0') {
+      **out = *(*p + 1);
+      (*out)++;
+      (*p) += 2;
+    } else {
+      **out = **p;
+      (*out)++;
+      (*p)++;
+    }
+  }
+}
+
+// Parse a single token from input string
+// Handles different quote types and escape sequences
+// Modifies input buffer in-place by inserting null terminators
+// Returns 0 if unclosed quote is encountered
+static int parse_single_token(char **p, char **out)
+{
+  while (**p != '\0') {
+    // Handle single quotes
+    if (**p == '\'') { 
+      if (!parse_single_quote(p, out)) {
+        return 0; // Unclosed quote
+      }
+      continue;
+    }
+
+    // Handle double quotes
+    if (**p == '"') {
+      if (!parse_double_quote(p, out)) {
+        return 0; // Unclosed quote
+      }
+      continue;
+    }
+
+    // Handle whitespace - end of token
+    if (**p == ' ' || **p == '\t') {
+      (*p)++; // Advance past whitespace
+      break;
+    }
+
+    // Parse unquoted content
+    parse_unquoted(p, out);
+  }
+
+  // Terminate token
+  **out = '\0';
   return 1; // Success
 }
 
